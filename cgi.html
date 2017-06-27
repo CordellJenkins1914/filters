@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<form action="/cgi-bin/cpp_dropdown.cgi" 
+   method="post" target="_blank">
+<form enctype="multipart/form-data" 
+         action="/cgi-bin/cpp_uploadfile.cgi" 
+         method="post">
+         <p>File: <input type="file" name="userfile" /></p>
+         <p><input type="submit" value="Upload" /></p>
+      </form>
+      <br>
+      
+   <select name="dropdown">
+      <option value="emboss" selected>emboss</option>
+      <option value="blur">blur</option>
+      <option value="edge" selected>edge</option>
+      <option value="median">median</option>
+      <option value="Red" selected>red</option>
+      <option value="Blue">blue</option>
+      <option value="Green" selected>green</option>
+      <option value="cartoon">cartoon</option>
+   </select>
+   <input type="submit" value="Submit"/>
+</form>
+
+
+</body>
+</html>

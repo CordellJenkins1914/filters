@@ -1,23 +1,19 @@
 #include<iostream>
-#include<string>
-#include <math.h> 
-#include "stdafx.h"
-#include<opencv2/highgui/highgui.hpp>
-#include<opencv2/imgproc/imgproc.hpp>
-
-#define filterWidth 5
-#define filterHeight 5
+#include "filters.h"
 
 
 using namespace std;
 using namespace cv;
 
+
+
 class Linear
 {
 public:
-	double factor = 0;       
-	double bias = 0;
-	double filter[filterWidth][filterHeight] = { {0} };
+	float factor = 0;       
+	float bias = 0;
+	float filter[filterWidth][filterHeight] = { {0} };
+	Mat image;
 };
 
 int geto(int gx, int gy)
@@ -72,12 +68,26 @@ Mat edgeDetection(Mat src, Mat dst)
 	return dst;
 }
 
-Mat colorEdges(Mat src)
+Mat colorEdges(Mat src, String color)
 {
+    int red = 0;
+    int blue = 0;
+    int green = 0;
+    
+    if(color.compare("Red")==0){
+         red = 243;
+    }
+    else if(color.compare("Green")==0){
+         green = 243;
+    }
+    else if(color.compare("Blue")==0){
+         blue = 243;
+    }
 	Mat dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	for (int y = 0; y < src.rows; y++)
 		for (int x = 0; x < src.cols; x++)
 		{
+			
 			if (src.at<uchar>(y, x)  < 75) {
 				Vec3b RGB = dst.at<Vec3b>(y, x);
 				RGB.val[0] = 0;
@@ -87,9 +97,9 @@ Mat colorEdges(Mat src)
 			}
 			else {
 				Vec3b RGB = dst.at<Vec3b>(y, x);
-				RGB.val[0] = 0;
-				RGB.val[1] = 0;
-				RGB.val[2] = 243;
+				RGB.val[0] = red;
+				RGB.val[1] = green;
+				RGB.val[2] = blue;
 				dst.at<Vec3b>(Point(x, y)) = RGB;
 			}
 
@@ -264,98 +274,3 @@ Mat cartoonify(Mat image, Mat src, Mat dst, Mat temp)
 	image.copyTo(dst, mask);
 	return dst;
 }
-int main(int argc, char *argv[])
-{
-	Mat image, result;
-	if (argc != 5)
-	{
-		printf("Incorrect number of arguments\n");
-		return -1;
-	}
-	String type = argv[1];
-	String word = argv[2];
-	int choice = 0;
-	
-	
-	image = imread(argv[3], CV_LOAD_IMAGE_COLOR);
-	result = image.clone();
-
-	Mat src = imread(argv[3], CV_LOAD_IMAGE_GRAYSCALE);
-	Mat dst = src.clone();
-	Mat temp = src.clone();
-	Mat color;
-	
-	for (int y = 0; y < image.rows; y++)
-		for (int x = 0; x < image.cols; x++)
-		{
-			Vec3b RGB = result.at<Vec3b>(y, x);
-			RGB.val[0] = 0;
-			RGB.val[1] = 0;
-			RGB.val[2] = 0;
-			result.at<Vec3b>(Point(x, y)) = RGB;
-		}
-	for (int y = 0; y < image.rows; y++)
-		for (int x = 0; x < image.cols; x++)
-		{
-	
-			
-			dst.at<uchar>(y, x) = 0;
-			temp.at<uchar>(y, x) = 0;
-			
-		}
-	if (type.compare("Linear") == 0)
-	{
-		if (word.compare("emboss") == 0)
-			choice = 1;
-		else if (word.compare("blur") == 0)
-			choice = 2;
-		else if (word.compare("edge") == 0)
-			choice = 3;
-		else
-			choice = 1;
-
-		Linear object = chooseFilter(choice);
-		result = applyFilter(image, result, object);
-		namedWindow("initial", CV_WINDOW_AUTOSIZE);
-		imshow("initial", image);
-
-		namedWindow("final", CV_WINDOW_AUTOSIZE);
-		imshow("final", result);
-		cv::imwrite(argv[4], result);
-	 }
-	if (type.compare("median") == 0)
-	{
-		dst = medianFilter(src, dst);
-		namedWindow("initial", CV_WINDOW_AUTOSIZE);
-		imshow("initial", image);
-
-		namedWindow("final", CV_WINDOW_AUTOSIZE);
-		imshow("final", dst);
-		cv::imwrite(argv[4], dst);
-	}
-	if (type.compare("gradient") == 0)
-	{
-
-		dst = edgeDetection(src, dst);
-		color = colorEdges(dst);
-		
-		namedWindow("initial", CV_WINDOW_AUTOSIZE);
-		imshow("initial", image);
-
-		namedWindow("Edge color", CV_WINDOW_AUTOSIZE);
-		imshow("Edge color", color);
-		cv::imwrite(argv[4], color);
-	}
-	if (type.compare("cartoon") == 0)
-	{
-		dst = cartoonify(image, src, dst, temp);
-		namedWindow("initial", CV_WINDOW_AUTOSIZE);
-		imshow("initial", image);
-
-		namedWindow("Cartoon", CV_WINDOW_AUTOSIZE);
-		imshow("Cartoon", dst);
-		cv::imwrite(argv[4], dst);
-	}
-	waitKey();
-}
-
