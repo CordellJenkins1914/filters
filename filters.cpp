@@ -1,26 +1,37 @@
-#include<iostream>
 #include "filters.h"
-
-
 using namespace std;
 using namespace cv;
 
 
-
-class Linear
+cv::Mat Color_Init(cv::Mat image, cv::Mat result)
 {
-public:
-	float factor = 0;       
-	float bias = 0;
-	float filter[filterWidth][filterHeight] = { {0} };
-	Mat image;
-};
+	for (int y = 0; y < image.rows; y++)
+                for (int x = 0; x < image.cols; x++)
+                {
+                        Vec3b RGB = result.at<Vec3b>(y, x);
+                        RGB.val[0] = 0;
+                        RGB.val[1] = 0;
+                        RGB.val[2] = 0;
+                        result.at<Vec3b>(Point(x, y)) = RGB;
+                }
+	return result;
+}
+cv::Mat Gray_Init(cv::Mat image, cv::Mat dst)
+{
+	for (int y = 0; y < image.rows; y++)
+                for (int x = 0; x < image.cols; x++)
+                {
 
+                        dst.at<uchar>(y, x) = 0;
+
+                }
+	return dst;
+}
 int geto(int gx, int gy)
 {
 	return(((gx == 0) && (gy == 0)) ? 0 : int((atan2(gy, gx) * 180 / CV_PI)));
 }
-int xGradient(Mat image, int x, int y)
+int xGradient(cv::Mat image, int x, int y)
 {
 	return image.at<uchar>(y - 1, x - 1) +
 		2 * image.at<uchar>(y, x - 1) +
@@ -31,7 +42,7 @@ int xGradient(Mat image, int x, int y)
 }
 
 
-int yGradient(Mat image, int x, int y)
+int yGradient(cv::Mat image, int x, int y)
 {
 	return image.at<uchar>(y - 1, x - 1) +
 		2 * image.at<uchar>(y - 1, x) +
@@ -41,7 +52,7 @@ int yGradient(Mat image, int x, int y)
 		image.at<uchar>(y + 1, x + 1);
 }
 
-Mat edgeDetection(Mat src, Mat dst)
+cv::Mat edgeDetection(cv::Mat src, Mat dst)
 {
 	int gx, gy, mag;
 	double angle;
@@ -68,22 +79,22 @@ Mat edgeDetection(Mat src, Mat dst)
 	return dst;
 }
 
-Mat colorEdges(Mat src, String color)
+cv::Mat colorEdges(cv::Mat src, int color)
 {
     int red = 0;
-    int blue = 0;
-    int green = 0;
+    int blue = 1;
+    int green = 2;
     
-    if(color.compare("Red")==0){
+    if(color==red){
          red = 243;
     }
-    else if(color.compare("Green")==0){
-         green = 243;
+    else if(color==green){
+         green =243;
     }
-    else if(color.compare("Blue")==0){
+    else if(color==blue){
          blue = 243;
     }
-	Mat dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
+	cv::Mat dst = Mat::zeros(src.rows, src.cols, CV_8UC3);
 	for (int y = 0; y < src.rows; y++)
 		for (int x = 0; x < src.cols; x++)
 		{
@@ -158,6 +169,7 @@ Linear chooseFilter(int choice) {
 	return object;
 
 }
+
 Mat applyFilter(Mat image, Mat result,Linear object) {
 
 	int val;
@@ -194,7 +206,7 @@ Mat applyFilter(Mat image, Mat result,Linear object) {
 		}
 	return result;
 }
-Mat medianFilter(Mat image, Mat dst)
+cv::Mat medianFilter(cv::Mat image, cv::Mat dst)
 {
 	uchar gray[filterWidth * filterHeight];
 	for (int x = 0; x < image.cols; x++)
@@ -246,7 +258,7 @@ Mat medianFilter(Mat image, Mat dst)
 		}
 	return dst;
 }
-Mat cartoonify(Mat image, Mat src, Mat dst, Mat temp)
+cv::Mat cartoonify(cv::Mat image, cv::Mat src, cv::Mat dst, cv::Mat temp)
 {
 	temp = medianFilter(src, dst);
 	Size size = image.size();
@@ -273,4 +285,77 @@ Mat cartoonify(Mat image, Mat src, Mat dst, Mat temp)
 	resize(smallImg, image, size, 0, 0, INTER_LINEAR);
 	image.copyTo(dst, mask);
 	return dst;
+}
+void Filter_Type(cv::Mat image, cv::Mat result, cv::Mat src, cv::Mat dst, cv::Mat temp, cv::Mat color, std::string type)
+{
+	if (type.compare("emboss") == 0)
+	{
+            	Linear object = chooseFilter(1);
+            	result = applyFilter(image, result, object);
+            	namedWindow("final", CV_WINDOW_AUTOSIZE);
+            	imshow("final", result);
+
+        }
+        else if (type.compare("blur") == 0)
+	{
+                Linear object = chooseFilter(2);
+            	result = applyFilter(image, result, object);
+            	namedWindow("final", CV_WINDOW_AUTOSIZE);
+            	imshow("final", result);
+    	}
+
+        else if (type.compare("edge") == 0)
+	{
+        	Linear object = chooseFilter(3);
+            	result = applyFilter(image, result, object);
+        	namedWindow("final", CV_WINDOW_AUTOSIZE);
+            	imshow("final", result);
+	    }
+	
+	else if (type.compare("median") == 0)
+        {
+                dst = medianFilter(src, dst);
+
+                namedWindow("final", CV_WINDOW_AUTOSIZE);
+                imshow("final", dst);
+
+        }
+        else if (type.compare("Red") == 0)
+        {
+
+                dst = edgeDetection(src, dst);
+                color = colorEdges(dst,0);
+
+                namedWindow("Edge color", CV_WINDOW_AUTOSIZE);
+                imshow("Edge color", color);
+
+        }
+        else if (type.compare("Blue") == 0)
+        {
+
+                dst = edgeDetection(src, dst);
+                color = colorEdges(dst,1);
+
+                namedWindow("Edge color", CV_WINDOW_AUTOSIZE);
+                imshow("Edge color", color);
+
+        }
+	else if (type.compare("Green") == 0)
+        {
+
+                dst = edgeDetection(src, dst);
+                color = colorEdges(dst,2);
+
+                namedWindow("Edge color", CV_WINDOW_AUTOSIZE);
+                imshow("Edge color", color);
+
+        }
+        else if (type.compare("cartoon") == 0)
+        {
+                dst = cartoonify(image,src, dst, temp);
+                namedWindow("Cartoon", CV_WINDOW_AUTOSIZE);
+                imshow("Cartoon", dst);
+
+        }
+	
 }

@@ -1,42 +1,35 @@
 #ifndef VARIABLE
 #define VARIABLE
 // Write your header file here.
+#include<iostream>
 #include<string>
 #include<math.h> 
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
 
-#include<opencv2/imgproc.hpp>
-#include<opencv2/highgui.hpp>
-
-#include <cgicc/CgiDefs.h> 
-#include <cgicc/Cgicc.h> 
-#include <cgicc/HTTPHTMLHeader.h> 
-#include <cgicc/HTMLClasses.h>
 
 #define filterWidth 5
 #define filterHeight 5
 
 
-using namespace std;
-using namespace cv;
-using namespace cgicc;
-
-
 class Linear
 {
 public:
-	float factor = 0;       
-	float bias = 0;
-	float filter[filterWidth][filterHeight] = { {0} };
-	Mat image;
+	double factor;       
+	double bias;
+	double filter[filterWidth][filterHeight];
+	cv::Mat image;
 };
-
+cv::Mat Color_Init(cv::Mat image, cv::Mat result);
+cv::Mat Gray_Init(cv::Mat image, cv::Mat result);
 int geto(int gx, int gy);
-int xGradient(Mat image, int x, int y);
-int yGradient(Mat image, int x, int y);
-Mat edgeDetection(Mat src, Mat dst);
-Mat colorEdges(Mat src, String color);
+int xGradient(cv::Mat image, int x, int y);
+int yGradient(cv::Mat image, int x, int y);
+cv::Mat edgeDetection(cv::Mat src, cv::Mat dst);
+cv::Mat colorEdges(cv::Mat src, int color);
 Linear chooseFilter(int choice);
-Mat applyFilter(Mat image, Mat result,Linear object);
-Mat medianFilter(Mat image, Mat dst);
-Mat cartoonify(Mat image, Mat src, Mat dst, Mat temp);
+cv::Mat applyFilter(cv::Mat image, cv::Mat result,Linear object);
+cv::Mat medianFilter(cv::Mat image, cv::Mat dst);
+cv::Mat cartoonify(cv::Mat image, cv::Mat src, cv::Mat dst, cv::Mat temp);
+void Filter_Type(cv::Mat image, cv::Mat result, cv::Mat src, cv::Mat dst, cv::Mat temp,cv::Mat color,std::string type);
 #endif
