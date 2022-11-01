@@ -1,2 +1,2 @@
 # filters
-Small project that adds a filter over a photo that the user takes
+Command line application that adds filters over images
